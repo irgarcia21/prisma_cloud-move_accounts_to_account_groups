@@ -9,6 +9,8 @@ SECRET_KEY --> introduce your Prisma Cloud SECRET KEY
 
 The script gets the current Account Groups in Prisma Cloud, checks if any Cloud Account in the default Account Group contains certain text and if so, it moves them to a custom Account Group.
 
+**IMPORTANT**: GCP accounts will not be moved with this script. GCP accounts should be automated by Prisma Cloud.
+
 ## Applicable use cases:
 
 The purpose of the script is to have dynamic adding of accounts to account groups. This is to make sure that all onboarded accounts are mapped to proper account groups automatically without manual intervention. The script can be run on a regular basis (e.g. daily) to constantly update the accounts.
