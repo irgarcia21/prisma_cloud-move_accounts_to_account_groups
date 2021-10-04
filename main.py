@@ -105,16 +105,19 @@ def get_accountGroupData_from_accountGroupList_by_name_equals (accountGroupName,
             accountGroupExists = True
             break
     if not accountGroupExists:
-        return_error("Account Group \"" + accountGroupName + "\" does not exists")
+        return_error("Account Group \"" + accountGroupName + "\" does not exist")
     return accountGroup
 
 def get_accountIds_from_accountGroup_by_name_contains (nameToSearch, accountGroupData):
-    accountIdsMatching = []
+    accountsMatching = []
     for account in accountGroupData['accounts']:
         if (nameToSearch in account['name']):
-            print("Account matching \"" + nameToSearch + "\": " + account['name'])
-            accountIdsMatching.append(account['id'])
-    return accountIdsMatching
+            accountsMatching.append(account)
+    print ("Number of Cloud Accounts matching \"" + nameToSearch + "\" in Account Group \"" + accountGroupData['name'] + "\": " + str(len(accountsMatching)))
+    if (len(accountsMatching) > 0):
+        for account in accountsMatching:
+            print ("\t" + account['name'])
+    return accountsMatching
 
 def delete_item_from_list_if_exists (item, list):
     if item in list:
@@ -126,25 +129,27 @@ def add_item_in_list_if_not_exists (item, list):
         list.append(item)
     return list
 
-def delete_account_from_account_group (api_config, accountIdToMove, accountGroupName, accountGroupsList):
+def delete_account_from_account_group (api_config, account, accountGroupName, accountGroupsList):
     accountGroup = get_accountGroupData_from_accountGroupList_by_name_equals (accountGroupName, accountGroupsList)
-    accountIds = delete_item_from_list_if_exists (accountIdToMove, accountGroup['accountIds'])
+    accountIds = delete_item_from_list_if_exists (account['id'], accountGroup['accountIds'])
+    print("Deleting account \"" + account['name'] + "\" from Account Group \"" + accountGroup['name'] + "\"")
     update_account_group (api_config, accountGroupName, accountGroup['id'], accountIds, accountGroup['description'])
 
-def add_account_in_account_group (api_config, accountIdToMove, accountGroupName, accountGroupsList):
+def add_account_in_account_group (api_config, account, accountGroupName, accountGroupsList):
     accountGroup = get_accountGroupData_from_accountGroupList_by_name_equals (accountGroupName, accountGroupsList)
-    accountIds = add_item_in_list_if_not_exists (accountIdToMove, accountGroup['accountIds'])
+    accountIds = add_item_in_list_if_not_exists (account['id'], accountGroup['accountIds'])
+    print("Adding account \"" + account['name'] + "\" to Account Group \"" + accountGroup['name'] + "\"")
     update_account_group (api_config, accountGroupName, accountGroup['id'], accountIds, accountGroup['description'])
 
-def move_account_from_source_to_destination_account_group (api_config, accountIdToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList):
-    delete_account_from_account_group (api_config, accountIdToMove, sourceAccountGroupName, accountGroupsList)
-    add_account_in_account_group (api_config, accountIdToMove, destinationAccountGroupName, accountGroupsList)
+def move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList):
+    delete_account_from_account_group (api_config, accountToMove, sourceAccountGroupName, accountGroupsList)
+    add_account_in_account_group (api_config, accountToMove, destinationAccountGroupName, accountGroupsList)
 
 def move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, sourceAccountGroupName, stringToSearchInAccounts, destinationAccountGroupName):
     sourceAccountGroupData = get_accountGroupData_from_accountGroupList_by_name_equals (sourceAccountGroupName, accountGroupsList)
-    accountIdsToMove = get_accountIds_from_accountGroup_by_name_contains (stringToSearchInAccounts, sourceAccountGroupData)
-    for accountIdToMove in accountIdsToMove:
-        move_account_from_source_to_destination_account_group (api_config, accountIdToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList)
+    accountsToMove = get_accountIds_from_accountGroup_by_name_contains (stringToSearchInAccounts, sourceAccountGroupData)
+    for accountToMove in accountsToMove:
+        move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList)
 
 def main():
     
