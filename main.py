@@ -149,7 +149,10 @@ def move_accounts_containing_name_from_source_to_destination_account_group (api_
     sourceAccountGroupData = get_accountGroupData_from_accountGroupList_by_name_equals (sourceAccountGroupName, accountGroupsList)
     accountsToMove = get_accountIds_from_accountGroup_by_name_contains (stringToSearchInAccounts, sourceAccountGroupData)
     for accountToMove in accountsToMove:
-        move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList)
+        if accountToMove['type']=="gcp":
+            print("Cloud Account \"" + accountToMove['name'] + "\" type is GCP, not moving it.")
+        else:
+            move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList)
 
 def main():
     
