@@ -170,8 +170,8 @@ def main():
         
     #----------- Move Accounts from their current Account Group to another one -----------
 
-    move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "kg", "default Account Group", "PaloTest") # Change here the strings depending on your environment
-    #move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "prod", "Default Account Group", "AccountGroup-prod") # Change here the strings depending on your environment
+    move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "test", "default Account Group", "AccountGroup-test") # Change here the strings depending on your environment
+    move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "prod", "Default Account Group", "AccountGroup-prod") # Change here the strings depending on your environment
 
 if __name__ == "__main__":
     main()
