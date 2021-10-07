@@ -101,7 +101,7 @@ def update_account_group (api_config, accountGroupName, accountGroupId, accountI
 def get_accountGroupData_from_accountGroupList_by_name_equals (accountGroupName, accountGroupsList):
     accountGroupExists = False
     for accountGroup in accountGroupsList:
-        if (accountGroup['name'] == accountGroupName):
+        if (accountGroup['name'].lower() == accountGroupName.lower()):
             accountGroupExists = True
             break
     if not accountGroupExists:
@@ -111,7 +111,7 @@ def get_accountGroupData_from_accountGroupList_by_name_equals (accountGroupName,
 def get_accountIds_from_accountGroup_by_name_contains (nameToSearch, accountGroupData):
     accountsMatching = []
     for account in accountGroupData['accounts']:
-        if (nameToSearch in account['name']):
+        if (nameToSearch.lower() in account['name'].lower()):
             accountsMatching.append(account)
     print ("Number of Cloud Accounts matching \"" + nameToSearch + "\" in Account Group \"" + accountGroupData['name'] + "\": " + str(len(accountsMatching)))
     if (len(accountsMatching) > 0):
@@ -129,30 +129,29 @@ def add_item_in_list_if_not_exists (item, list):
         list.append(item)
     return list
 
-def delete_account_from_account_group (api_config, account, accountGroupName, accountGroupsList):
-    accountGroup = get_accountGroupData_from_accountGroupList_by_name_equals (accountGroupName, accountGroupsList)
+def delete_account_from_account_group (api_config, account, accountGroup):
     accountIds = delete_item_from_list_if_exists (account['id'], accountGroup['accountIds'])
     print("Deleting account \"" + account['name'] + "\" from Account Group \"" + accountGroup['name'] + "\"")
-    update_account_group (api_config, accountGroupName, accountGroup['id'], accountIds, accountGroup['description'])
+    update_account_group (api_config, accountGroup['name'], accountGroup['id'], accountIds, accountGroup['description'])
 
-def add_account_in_account_group (api_config, account, accountGroupName, accountGroupsList):
-    accountGroup = get_accountGroupData_from_accountGroupList_by_name_equals (accountGroupName, accountGroupsList)
+def add_account_in_account_group (api_config, account, accountGroup):
     accountIds = add_item_in_list_if_not_exists (account['id'], accountGroup['accountIds'])
     print("Adding account \"" + account['name'] + "\" to Account Group \"" + accountGroup['name'] + "\"")
-    update_account_group (api_config, accountGroupName, accountGroup['id'], accountIds, accountGroup['description'])
+    update_account_group (api_config, accountGroup['name'], accountGroup['id'], accountIds, accountGroup['description'])
 
-def move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList):
-    delete_account_from_account_group (api_config, accountToMove, sourceAccountGroupName, accountGroupsList)
-    add_account_in_account_group (api_config, accountToMove, destinationAccountGroupName, accountGroupsList)
+def move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroup, destinationAccountGroup):
+    delete_account_from_account_group (api_config, accountToMove, sourceAccountGroup)
+    add_account_in_account_group (api_config, accountToMove, destinationAccountGroup)
 
-def move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, sourceAccountGroupName, stringToSearchInAccounts, destinationAccountGroupName):
-    sourceAccountGroupData = get_accountGroupData_from_accountGroupList_by_name_equals (sourceAccountGroupName, accountGroupsList)
-    accountsToMove = get_accountIds_from_accountGroup_by_name_contains (stringToSearchInAccounts, sourceAccountGroupData)
+def move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, stringToSearchInAccounts, sourceAccountGroupName, destinationAccountGroupName):
+    sourceAccountGroup = get_accountGroupData_from_accountGroupList_by_name_equals (sourceAccountGroupName, accountGroupsList)
+    destinationAccountGroup = get_accountGroupData_from_accountGroupList_by_name_equals (destinationAccountGroupName, accountGroupsList)
+    accountsToMove = get_accountIds_from_accountGroup_by_name_contains (stringToSearchInAccounts, sourceAccountGroup)
     for accountToMove in accountsToMove:
         if accountToMove['type']=="gcp":
             print("Cloud Account \"" + accountToMove['name'] + "\" type is GCP, not moving it.")
         else:
-            move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroupName, destinationAccountGroupName, accountGroupsList)
+            move_account_from_source_to_destination_account_group (api_config, accountToMove, sourceAccountGroup, destinationAccountGroup)
 
 def main():
     
@@ -171,8 +170,8 @@ def main():
         
     #----------- Move Accounts from their current Account Group to another one -----------
 
-    move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "Default Account Group", "test", "AccountGroup-test") # Change here the strings depending on your environment
-    move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "Default Account Group", "prod", "AccountGroup-prod") # Change here the strings depending on your environment
+    move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "kg", "default Account Group", "PaloTest") # Change here the strings depending on your environment
+    #move_accounts_containing_name_from_source_to_destination_account_group (api_config, accountGroupsList, "prod", "Default Account Group", "AccountGroup-prod") # Change here the strings depending on your environment
 
 if __name__ == "__main__":
     main()
